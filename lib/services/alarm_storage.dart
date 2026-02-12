@@ -17,6 +17,15 @@ class AlarmStorage {
     return decoded.map((json) => Alarm.fromJson(json)).toList();
   }
 
+  Future<Alarm?> getAlarm(String id) async {
+    final alarms = await loadAlarms();
+    try {
+      return alarms.firstWhere((a) => a.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
   Future<void> saveAlarms(List<Alarm> alarms) async {
     final prefs = await SharedPreferences.getInstance();
     final String encoded = jsonEncode(

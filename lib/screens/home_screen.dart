@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/alarm.dart';
 import '../services/alarm_storage.dart';
+import '../services/alarm_service.dart';
 import 'add_edit_alarm_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -37,10 +38,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _toggleAlarm(Alarm alarm) async {
     final updatedAlarm = alarm.copyWith(isEnabled: !alarm.isEnabled);
     await _storage.updateAlarm(updatedAlarm);
+    
+    if (updatedAlarm.isEnabled) {
+      await AlarmService().scheduleAlarm(updatedAlarm);
+    } else {
+      await AlarmService().cancelAlarm(updatedAlarm.id);
+    }
+    
     await _loadAlarms();
   }
 
   Future<void> _deleteAlarm(String id) async {
+    await AlarmService().cancelAlarm(id);
     await _storage.deleteAlarm(id);
     await _loadAlarms();
   }

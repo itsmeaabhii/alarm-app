@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/alarm.dart';
 import '../services/alarm_storage.dart';
+import '../services/alarm_service.dart';
 
 class AddEditAlarmScreen extends StatefulWidget {
   final Alarm? alarm;
@@ -84,9 +85,16 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
     );
 
     if (widget.alarm != null) {
+      // Cancel old alarm before updating
+      await AlarmService().cancelAlarm(alarm.id);
       await _storage.updateAlarm(alarm);
     } else {
       await _storage.addAlarm(alarm);
+    }
+
+    // Schedule the new/updated alarm if enabled
+    if (alarm.isEnabled) {
+      await AlarmService().scheduleAlarm(alarm);
     }
 
     if (mounted) {

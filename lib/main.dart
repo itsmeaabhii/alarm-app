@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
 import 'screens/home_screen.dart';
+import 'services/alarm_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize alarm service
+  await AlarmService().initialize();
+  await AlarmService().rescheduleAllAlarms();
+  
   runApp(const AlarmApp());
 }
 
