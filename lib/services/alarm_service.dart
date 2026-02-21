@@ -69,7 +69,7 @@ class AlarmService {
     }
 
     // Convert to TZDateTime for scheduling
-    final location = tz.getLocation('US/Pacific');
+    final location = tz.local;
     final tzScheduledDate = tz.TZDateTime.from(scheduledDate, location);
 
     const androidDetails = AndroidNotificationDetails(
@@ -110,7 +110,7 @@ class AlarmService {
       // Repeating alarm - schedule for each day
       for (int day in alarm.repeatDays) {
         var nextAlarm = _getNextAlarmDate(alarm.hour, alarm.minute, day);
-        final location = tz.getLocation('US/Pacific');
+        final location = tz.local;
         final tzNextAlarm = tz.TZDateTime.from(nextAlarm, location);
 
         await _notifications.zonedSchedule(
