@@ -2,6 +2,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest_all.dart' as tz_data;
+import 'package:flutter_timezone/flutter_timezone.dart';
 import '../models/alarm.dart';
 import 'alarm_storage.dart';
 
@@ -20,6 +21,18 @@ class AlarmService {
 
     tz_data.initializeTimeZones();
 
+    // Set device's local timezone so alarms fire at the correct local time
+    try {
+      // getLocalTimezone() returns IANA timezone string (e.g. "Asia/Kolkata")
+      final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+      if (timeZoneName.isNotEmpty &&
+          tz.timeZoneDatabase.locations.containsKey(timeZoneName)) {
+        tz.setLocalLocation(tz.getLocation(timeZoneName));
+      }
+    } catch (_) {
+      // Keep default (UTC) if device timezone cannot be determined
+    }
+
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -37,17 +50,29 @@ class AlarmService {
       onDidReceiveNotificationResponse: _onNotificationTapped,
     );
 
-    // Request permissions for Android
-    await _notifications
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
+    // Create Android alarm channel with sound so the notification actually rings
+    final androidPlugin = _notifications.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    if (androidPlugin != null) {
+      await androidPlugin.createNotificationChannel(
+        const AndroidNotificationChannel(
+          'alarm_channel',
+          'Alarms',
+          description: 'Channel for alarm notifications',
+          importance: Importance.max,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          showBadge: true,
+        ),
+      );
+    }
 
+    await androidPlugin?.requestNotificationsPermission();
     _isInitialized = true;
   }
 
   void _onNotificationTapped(NotificationResponse response) async {
-    // Play alarm sound when notification is tapped
     await playAlarmSound();
   }
 
@@ -63,12 +88,10 @@ class AlarmService {
       alarm.minute,
     );
 
-    // If time has passed today, schedule for tomorrow
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    // Convert to TZDateTime for scheduling
     final location = tz.local;
     final tzScheduledDate = tz.TZDateTime.from(scheduledDate, location);
 
@@ -81,12 +104,14 @@ class AlarmService {
       playSound: true,
       enableVibration: true,
       fullScreenIntent: true,
+      category: AndroidNotificationCategory.alarm,
     );
 
     const iosDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      interruptionLevel: InterruptionLevel.timeSensitive,
     );
 
     const details = NotificationDetails(
@@ -95,7 +120,6 @@ class AlarmService {
     );
 
     if (alarm.repeatDays.isEmpty) {
-      // One-time alarm
       await _notifications.zonedSchedule(
         alarm.id.hashCode,
         'Alarm',
@@ -107,7 +131,6 @@ class AlarmService {
             UILocalNotificationDateInterpretation.absoluteTime,
       );
     } else {
-      // Repeating alarm - schedule for each day
       for (int day in alarm.repeatDays) {
         var nextAlarm = _getNextAlarmDate(alarm.hour, alarm.minute, day);
         final location = tz.local;
@@ -132,7 +155,6 @@ class AlarmService {
     final now = DateTime.now();
     var scheduledDate = DateTime(now.year, now.month, now.day, hour, minute);
 
-    // Find next occurrence of the target day
     while (scheduledDate.weekday != targetDay ||
         scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
@@ -143,15 +165,14 @@ class AlarmService {
 
   Future<void> cancelAlarm(String alarmId) async {
     final alarm = await AlarmStorage().getAlarm(alarmId);
-    
+
     if (alarm != null && alarm.repeatDays.isEmpty) {
       await _notifications.cancel(alarmId.hashCode);
     } else if (alarm != null) {
       for (int day in alarm.repeatDays) {
-        await _notifications.cancel('${alarmId}_$day'.hashCode);
+        await _notifications.cancel('${alarm.id}_$day'.hashCode);
       }
     } else {
-      // Fallback if alarm not found
       await _notifications.cancel(alarmId.hashCode);
     }
   }
@@ -160,10 +181,7 @@ class AlarmService {
     try {
       await _audioPlayer.setReleaseMode(ReleaseMode.loop);
       await _audioPlayer.play(AssetSource('sounds/alarm_sound.mp3'));
-    } catch (e) {
-      // Fallback if sound file doesn't exist - app will use system notification sound
-      // Error: $e
-    }
+    } catch (_) {}
   }
 
   Future<void> stopAlarmSound() async {
