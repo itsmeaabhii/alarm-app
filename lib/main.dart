@@ -24,37 +24,43 @@ class AlarmApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF6366F1),
-          brightness: Brightness.light,
+          brightness: Brightness.dark,
           primary: const Color(0xFF6366F1),
-          surface: const Color(0xFFF8FAFC),
+          surface: const Color(0xFF1E1E2E),
+          onSurface: const Color(0xFFE4E4E7),
+          surfaceContainerHighest: const Color(0xFF2D2D3A),
         ),
-        scaffoldBackgroundColor: const Color(0xFFF1F5F9),
+        scaffoldBackgroundColor: const Color(0xFF121212),
         textTheme: GoogleFonts.dmSansTextTheme(
-          ThemeData.light().textTheme,
+          ThemeData.dark().textTheme,
         ).copyWith(
           headlineMedium: GoogleFonts.dmSans(
             fontWeight: FontWeight.w700,
             letterSpacing: -0.5,
+            color: Colors.white,
           ),
           titleLarge: GoogleFonts.dmSans(
             fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
-          bodyLarge: GoogleFonts.dmSans(),
+          bodyLarge: GoogleFonts.dmSans(
+            color: const Color(0xFFD1D5DB),
+          ),
         ),
         appBarTheme: AppBarTheme(
           elevation: 0,
           centerTitle: false,
           backgroundColor: Colors.transparent,
-          foregroundColor: const Color(0xFF0F172A),
+          foregroundColor: Colors.white,
           titleTextStyle: GoogleFonts.dmSans(
             fontSize: 28,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF0F172A),
+            color: Colors.white,
           ),
         ),
         cardTheme: CardThemeData(
           elevation: 0,
-          color: Colors.white,
+          color: const Color(0xFF1E1E2E),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -73,30 +79,33 @@ class AlarmApp extends StatelessWidget {
             if (states.contains(WidgetState.selected)) {
               return Colors.white;
             }
-            return Colors.grey[300];
+            return Colors.grey[600];
           }),
           trackColor: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
               return const Color(0xFF6366F1);
             }
-            return Colors.grey[300];
+            return Colors.grey[800];
           }),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
-          fillColor: const Color(0xFFF8FAFC),
+          fillColor: const Color(0xFF1E1E2E),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey.shade800),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: Colors.grey.shade200),
+            borderSide: BorderSide(color: Colors.grey.shade800),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          labelStyle: TextStyle(color: Colors.grey.shade400),
+          hintStyle: TextStyle(color: Colors.grey.shade600),
         ),
       ),
       home: const HomeScreen(),

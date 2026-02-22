@@ -51,11 +51,11 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: ColorScheme.light(
+            colorScheme: ColorScheme.dark(
               primary: const Color(0xFF6366F1),
               onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: const Color(0xFF0F172A),
+              surface: const Color(0xFF1A1A24),
+              onSurface: Colors.white,
             ),
           ),
           child: child!,
@@ -106,225 +106,364 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
-      appBar: AppBar(
-        title: Text(
-          widget.alarm != null ? 'Edit alarm' : 'New alarm',
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF0F172A),
-            fontSize: 20,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0A0A0F),
+              Color(0xFF121212),
+              Color(0xFF0F0F14),
+            ],
+            stops: [0.0, 0.5, 1.0],
           ),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: Colors.grey.shade700),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: TextButton(
-              onPressed: _saveAlarm,
-              child: const Text(
-                'Save',
-                style: TextStyle(
-                  color: Color(0xFF6366F1),
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
+        child: SafeArea(
+          child: Column(
+            children: [
+              AppBar(
+                title: Text(
+                  widget.alarm != null ? 'Edit alarm' : 'New alarm',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    fontSize: 22,
+                    letterSpacing: -0.5,
+                  ),
                 ),
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Time picker
-            Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              elevation: 2,
-              shadowColor: Colors.black.withOpacity(0.06),
-              child: InkWell(
-                onTap: _pickTime,
-                borderRadius: BorderRadius.circular(20),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1).withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: const Icon(
-                          Icons.schedule_rounded,
-                          color: Color(0xFF6366F1),
-                          size: 28,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade900,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.close_rounded,
+                      color: Colors.grey.shade400,
+                      size: 20,
+                    ),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                         ),
                       ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Time',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade600,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              _selectedTime.format(context),
-                              style: const TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF0F172A),
-                                letterSpacing: -0.5,
-                              ),
+                      child: TextButton(
+                        onPressed: _saveAlarm,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
+                        ),
+                        child: const Text(
+                          'Save',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Time picker
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A24),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.grey.shade800.withOpacity(0.3),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
                             ),
                           ],
                         ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _pickTime,
+                            borderRadius: BorderRadius.circular(24),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 28,
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          const Color(0xFF6366F1).withOpacity(0.3),
+                                          const Color(0xFF8B5CF6).withOpacity(0.2),
+                                        ],
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: const Color(0xFF6366F1).withOpacity(0.4),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: const Icon(
+                                      Icons.schedule_rounded,
+                                      color: Color(0xFF6366F1),
+                                      size: 28,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Time',
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.grey.shade400,
+                                            fontWeight: FontWeight.w600,
+                                            letterSpacing: 0.3,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          _selectedTime.format(context),
+                                          style: const TextStyle(
+                                            fontSize: 36,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white,
+                                            letterSpacing: -1,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Icon(
+                                    Icons.chevron_right_rounded,
+                                    color: Colors.grey.shade600,
+                                    size: 28,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
-                      Icon(
-                        Icons.chevron_right_rounded,
-                        color: Colors.grey.shade400,
-                        size: 28,
+                      const SizedBox(height: 16),
+
+                      // Label
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A24),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.grey.shade800.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 8,
+                          ),
+                          child: TextField(
+                            controller: _labelController,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: 'Label',
+                              hintText: 'Wake up, Meeting…',
+                              border: InputBorder.none,
+                              prefixIcon: Icon(
+                                Icons.label_outline_rounded,
+                                color: Colors.grey.shade500,
+                                size: 22,
+                              ),
+                              labelStyle: TextStyle(
+                                color: Colors.grey.shade400,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              hintStyle: TextStyle(color: Colors.grey.shade600),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Repeat
+                      Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A24),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: Colors.grey.shade800.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(22),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF6366F1).withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Icon(
+                                      Icons.repeat_rounded,
+                                      color: const Color(0xFF6366F1),
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  const Text(
+                                    'Repeat',
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  _DayChip(
+                                    day: 'M',
+                                    dayNumber: 1,
+                                    isSelected: _selectedDays.contains(1),
+                                    onTap: () => _toggleDay(1),
+                                  ),
+                                  _DayChip(
+                                    day: 'T',
+                                    dayNumber: 2,
+                                    isSelected: _selectedDays.contains(2),
+                                    onTap: () => _toggleDay(2),
+                                  ),
+                                  _DayChip(
+                                    day: 'W',
+                                    dayNumber: 3,
+                                    isSelected: _selectedDays.contains(3),
+                                    onTap: () => _toggleDay(3),
+                                  ),
+                                  _DayChip(
+                                    day: 'T',
+                                    dayNumber: 4,
+                                    isSelected: _selectedDays.contains(4),
+                                    onTap: () => _toggleDay(4),
+                                  ),
+                                  _DayChip(
+                                    day: 'F',
+                                    dayNumber: 5,
+                                    isSelected: _selectedDays.contains(5),
+                                    onTap: () => _toggleDay(5),
+                                  ),
+                                  _DayChip(
+                                    day: 'S',
+                                    dayNumber: 6,
+                                    isSelected: _selectedDays.contains(6),
+                                    onTap: () => _toggleDay(6),
+                                  ),
+                                  _DayChip(
+                                    day: 'S',
+                                    dayNumber: 7,
+                                    isSelected: _selectedDays.contains(7),
+                                    onTap: () => _toggleDay(7),
+                                  ),
+                                ],
+                              ),
+                              if (_selectedDays.isEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: Text(
+                                    'One-time alarm',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey.shade500,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      Text(
+                        'Quick presets',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.grey.shade300,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          _PresetChip(
+                            label: 'Weekdays',
+                            onTap: () => setState(() => _selectedDays = {1, 2, 3, 4, 5}),
+                          ),
+                          _PresetChip(
+                            label: 'Weekends',
+                            onTap: () => setState(() => _selectedDays = {6, 7}),
+                          ),
+                          _PresetChip(
+                            label: 'Every day',
+                            onTap: () =>
+                                setState(() => _selectedDays = {1, 2, 3, 4, 5, 6, 7}),
+                          ),
+                          _PresetChip(
+                            label: 'Clear',
+                            onTap: () => setState(() => _selectedDays = {}),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // Label
-            Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              elevation: 2,
-              shadowColor: Colors.black.withOpacity(0.06),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                child: TextField(
-                  controller: _labelController,
-                  decoration: InputDecoration(
-                    labelText: 'Label',
-                    hintText: 'Wake up, Meeting…',
-                    border: InputBorder.none,
-                    prefixIcon: Icon(
-                      Icons.label_outline_rounded,
-                      color: Colors.grey.shade500,
-                      size: 22,
-                    ),
-                    labelStyle: TextStyle(color: Colors.grey.shade600),
-                    hintStyle: TextStyle(color: Colors.grey.shade400),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Repeat
-            Material(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              elevation: 2,
-              shadowColor: Colors.black.withOpacity(0.06),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.repeat_rounded,
-                          color: Colors.grey.shade600,
-                          size: 22,
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Repeat',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF0F172A),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _DayChip(day: 'M', dayNumber: 1, isSelected: _selectedDays.contains(1), onTap: () => _toggleDay(1)),
-                        _DayChip(day: 'T', dayNumber: 2, isSelected: _selectedDays.contains(2), onTap: () => _toggleDay(2)),
-                        _DayChip(day: 'W', dayNumber: 3, isSelected: _selectedDays.contains(3), onTap: () => _toggleDay(3)),
-                        _DayChip(day: 'T', dayNumber: 4, isSelected: _selectedDays.contains(4), onTap: () => _toggleDay(4)),
-                        _DayChip(day: 'F', dayNumber: 5, isSelected: _selectedDays.contains(5), onTap: () => _toggleDay(5)),
-                        _DayChip(day: 'S', dayNumber: 6, isSelected: _selectedDays.contains(6), onTap: () => _toggleDay(6)),
-                        _DayChip(day: 'S', dayNumber: 7, isSelected: _selectedDays.contains(7), onTap: () => _toggleDay(7)),
-                      ],
-                    ),
-                    if (_selectedDays.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text(
-                          'One-time alarm',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            Text(
-              'Quick presets',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: Colors.grey.shade700,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                _PresetChip(
-                  label: 'Weekdays',
-                  onTap: () => setState(() => _selectedDays = {1, 2, 3, 4, 5}),
-                ),
-                _PresetChip(
-                  label: 'Weekends',
-                  onTap: () => setState(() => _selectedDays = {6, 7}),
-                ),
-                _PresetChip(
-                  label: 'Every day',
-                  onTap: () => setState(() => _selectedDays = {1, 2, 3, 4, 5, 6, 7}),
-                ),
-                _PresetChip(
-                  label: 'Clear',
-                  onTap: () => setState(() => _selectedDays = {}),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -349,20 +488,38 @@ class _DayChip extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 40,
-        height: 40,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        width: 44,
+        height: 44,
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF6366F1) : Colors.grey.shade100,
+          gradient: isSelected
+              ? const LinearGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          color: isSelected ? null : Colors.grey.shade900,
           shape: BoxShape.circle,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withOpacity(0.4),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Center(
           child: Text(
             day,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.grey.shade600,
-              fontWeight: FontWeight.w700,
-              fontSize: 14,
+              color: isSelected ? Colors.white : Colors.grey.shade400,
+              fontWeight: FontWeight.w800,
+              fontSize: 15,
+              letterSpacing: 0.5,
             ),
           ),
         ),
@@ -379,22 +536,30 @@ class _PresetChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      elevation: 1,
-      shadowColor: Colors.black.withOpacity(0.05),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFF6366F1),
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A24),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.grey.shade800.withOpacity(0.5),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFF6366F1),
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                letterSpacing: 0.2,
+              ),
             ),
           ),
         ),

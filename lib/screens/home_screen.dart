@@ -36,13 +36,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  String _greeting() {
-    final hour = TimeOfDay.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
-  }
-
   String? get _nextEnabledAlarmSummary {
     final enabled = _alarms.where((a) => a.isEnabled).toList();
     if (enabled.isEmpty) return null;
@@ -92,9 +85,14 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFEEF2FF), Color(0xFFF9FAFB)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0A0A0F),
+              Color(0xFF121212),
+              Color(0xFF0F0F14),
+            ],
+            stops: [0.0, 0.5, 1.0],
           ),
         ),
         child: SafeArea(
@@ -102,76 +100,82 @@ class _HomeScreenState extends State<HomeScreen> {
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _greeting(),
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w500,
+                      Text(
+                        'Alarms',
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -1.2,
+                              shadows: [
+                                Shadow(
+                                  color: const Color(0xFF6366F1).withOpacity(0.3),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 0),
+                                ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Alarms',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headlineMedium
-                                ?.copyWith(color: const Color(0xFF0F172A)),
-                          ),
-                          const SizedBox(height: 6),
-                          Builder(
-                            builder: (context) {
-                              final next = _nextEnabledAlarmSummary;
-                              final text = next ??
-                                  (_alarms.isEmpty
-                                      ? 'No alarms set yet'
-                                      : '${_alarms.length} alarm${_alarms.length == 1 ? '' : 's'} scheduled');
-                              return Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF6366F1)
-                                          .withOpacity(0.08),
-                                      borderRadius: BorderRadius.circular(999),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          next != null
-                                              ? Icons.schedule_rounded
-                                              : Icons.notifications_none_rounded,
-                                          size: 16,
-                                          color: const Color(0xFF6366F1),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          text,
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF4B5563),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
+                      ),
+                      const SizedBox(height: 16),
+                      Builder(
+                        builder: (context) {
+                          final next = _nextEnabledAlarmSummary;
+                          final text = next ??
+                              (_alarms.isEmpty
+                                  ? 'No alarms set yet'
+                                  : '${_alarms.length} alarm${_alarms.length == 1 ? '' : 's'} scheduled');
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF6366F1).withOpacity(0.2),
+                                  const Color(0xFF8B5CF6).withOpacity(0.15),
                                 ],
-                              );
-                            },
-                          ),
-                        ],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xFF6366F1).withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(
+                                    next != null
+                                        ? Icons.schedule_rounded
+                                        : Icons.notifications_none_rounded,
+                                    size: 16,
+                                    color: const Color(0xFFA5B4FC),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  text,
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFFE4E4E7),
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -196,13 +200,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 )
               else
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 100),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final alarm = _alarms[index];
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.only(bottom: 14),
                           child: _AlarmCard(
                             alarm: alarm,
                             onToggle: () => _toggleAlarm(alarm),
@@ -219,14 +223,34 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _navigateToAddEdit(),
-        icon: const Icon(Icons.add_rounded, size: 24),
-        label: const Text(
-          'Add alarm',
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6366F1).withOpacity(0.4),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          onPressed: () => _navigateToAddEdit(),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          icon: const Icon(Icons.add_rounded, size: 24),
+          label: const Text(
+            'Add alarm',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+              letterSpacing: 0.3,
+            ),
           ),
         ),
       ),
@@ -248,47 +272,85 @@ class _EmptyState extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(28),
+              padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withOpacity(0.08),
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF6366F1).withOpacity(0.2),
+                    const Color(0xFF8B5CF6).withOpacity(0.15),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFF6366F1).withOpacity(0.3),
+                  width: 2,
+                ),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.schedule_rounded,
-                size: 64,
-                color: const Color(0xFF6366F1).withOpacity(0.8),
+                size: 72,
+                color: Color(0xFF6366F1),
               ),
             ),
-            const SizedBox(height: 28),
+            const SizedBox(height: 32),
             Text(
               'No alarms yet',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontSize: 22,
-                    color: const Color(0xFF0F172A),
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.5,
                   ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Text(
-              'Tap the button below to create your first alarm and wake up on time.',
+              'Create your first alarm to wake up on time',
               style: TextStyle(
                 fontSize: 15,
-                color: Colors.grey.shade600,
-                height: 1.4,
+                color: Colors.grey.shade400,
+                height: 1.5,
+                letterSpacing: 0.2,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 32),
-            FilledButton.icon(
-              onPressed: onAddAlarm,
-              icon: const Icon(Icons.add_rounded, size: 20),
-              label: const Text('Add alarm'),
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF6366F1),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+            const SizedBox(height: 40),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6366F1).withOpacity(0.4),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: FilledButton.icon(
+                onPressed: onAddAlarm,
+                icon: const Icon(Icons.add_rounded, size: 22),
+                label: const Text(
+                  'Add alarm',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
               ),
             ),
@@ -319,135 +381,200 @@ class _AlarmCard extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: enabled
             ? const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6), Color(0xFF9333EA)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : null,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: enabled
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF6366F1).withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
       ),
       child: Padding(
-        padding: enabled
-            ? const EdgeInsets.all(1.4)
-            : EdgeInsets.zero,
-        child: Material(
-          color: enabled ? Colors.white.withOpacity(0.96) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          elevation: 2,
-          shadowColor: Colors.black.withOpacity(0.12),
-          child: InkWell(
-            onTap: onEdit,
-            borderRadius: BorderRadius.circular(20),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          alarm.timeString,
-                          style: TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -1,
-                            color: enabled
-                                ? const Color(0xFF0F172A)
-                                : Colors.grey.shade400,
-                            height: 1.1,
-                          ),
-                        ),
-                        if (alarm.label.isNotEmpty) ...[
-                          const SizedBox(height: 6),
+        padding: enabled ? const EdgeInsets.all(2) : EdgeInsets.zero,
+        child: Container(
+          decoration: BoxDecoration(
+            color: enabled ? const Color(0xFF1A1A24) : const Color(0xFF16161B),
+            borderRadius: BorderRadius.circular(22),
+            border: enabled
+                ? null
+                : Border.all(
+                    color: Colors.grey.shade800.withOpacity(0.3),
+                    width: 1,
+                  ),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onEdit,
+              borderRadius: BorderRadius.circular(22),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 20),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            alarm.label,
+                            alarm.timeString,
                             style: TextStyle(
-                              fontSize: 16,
-                              color: enabled
-                                  ? Colors.grey.shade700
-                                  : Colors.grey.shade400,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 48,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -1.5,
+                              color: enabled ? Colors.white : Colors.grey.shade600,
+                              height: 1.0,
+                              shadows: enabled
+                                  ? [
+                                      Shadow(
+                                        color: const Color(0xFF6366F1).withOpacity(0.5),
+                                        blurRadius: 15,
+                                        offset: const Offset(0, 0),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                          ),
+                          if (alarm.label.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              alarm.label,
+                              style: TextStyle(
+                                fontSize: 17,
+                                color: enabled
+                                    ? Colors.grey.shade300
+                                    : Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: enabled
+                                  ? LinearGradient(
+                                      colors: [
+                                        const Color(0xFF6366F1).withOpacity(0.25),
+                                        const Color(0xFF8B5CF6).withOpacity(0.2),
+                                      ],
+                                    )
+                                  : null,
+                              color: enabled ? null : Colors.grey.shade900,
+                              borderRadius: BorderRadius.circular(10),
+                              border: enabled
+                                  ? Border.all(
+                                      color: const Color(0xFF6366F1).withOpacity(0.4),
+                                      width: 1,
+                                    )
+                                  : null,
+                            ),
+                            child: Text(
+                              alarm.repeatText,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: enabled
+                                    ? const Color(0xFFC4B5FD)
+                                    : Colors.grey.shade500,
+                                letterSpacing: 0.3,
+                              ),
                             ),
                           ),
                         ],
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        Switch(
+                          value: enabled,
+                          onChanged: (_) => onToggle(),
+                        ),
+                        const SizedBox(height: 4),
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_outline_rounded,
+                            color: Colors.grey.shade500,
+                            size: 22,
                           ),
-                          decoration: BoxDecoration(
-                            color: enabled
-                                ? const Color(0xFF6366F1).withOpacity(0.10)
-                                : Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            alarm.repeatText,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: enabled
-                                  ? const Color(0xFF4F46E5)
-                                  : Colors.grey.shade500,
-                            ),
-                          ),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (ctx) => AlertDialog(
+                                backgroundColor: const Color(0xFF1A1A24),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                title: const Text(
+                                  'Delete alarm?',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                content: Text(
+                                  'This alarm will be removed. You can add it again anytime.',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade300,
+                                    height: 1.5,
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(ctx),
+                                    child: Text(
+                                      'Cancel',
+                                      style: TextStyle(color: Colors.grey.shade400),
+                                    ),
+                                  ),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.red.shade500,
+                                          Colors.red.shade600,
+                                        ],
+                                      ),
+                                    ),
+                                    child: FilledButton(
+                                      onPressed: () {
+                                        Navigator.pop(ctx);
+                                        onDelete();
+                                      },
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: Colors.transparent,
+                                        foregroundColor: Colors.white,
+                                      ),
+                                      child: const Text('Delete'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
-                  ),
-                  Column(
-                    children: [
-                      Switch(
-                        value: enabled,
-                        onChanged: (_) => onToggle(),
-                      ),
-                      IconButton(
-                        icon: Icon(
-                          Icons.delete_outline_rounded,
-                          color: Colors.grey.shade400,
-                          size: 22,
-                        ),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              title: const Text('Delete alarm?'),
-                              content: const Text(
-                                'This alarm will be removed. You can add it again anytime.',
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  child: Text(
-                                    'Cancel',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                ),
-                                FilledButton(
-                                  onPressed: () {
-                                    Navigator.pop(ctx);
-                                    onDelete();
-                                  },
-                                  style: FilledButton.styleFrom(
-                                    backgroundColor: Colors.red.shade400,
-                                  ),
-                                  child: const Text('Delete'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
