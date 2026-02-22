@@ -36,6 +36,25 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  String _greeting() {
+    final hour = TimeOfDay.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 18) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  String? get _nextEnabledAlarmSummary {
+    final enabled = _alarms.where((a) => a.isEnabled).toList();
+    if (enabled.isEmpty) return null;
+    enabled.sort((a, b) {
+      final aTime = a.hour * 60 + a.minute;
+      final bTime = b.hour * 60 + b.minute;
+      return aTime.compareTo(bTime);
+    });
+    final next = enabled.first;
+    return '${next.timeString} • ${next.repeatText}';
+  }
+
   Future<void> _toggleAlarm(Alarm alarm) async {
     final updatedAlarm = alarm.copyWith(isEnabled: !alarm.isEnabled);
     await _storage.updateAlarm(updatedAlarm);
@@ -70,80 +89,134 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Alarms',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                color: const Color(0xFF0F172A),
-                              ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _alarms.isEmpty
-                              ? 'No alarms set'
-                              : '${_alarms.length} alarm${_alarms.length == 1 ? '' : 's'}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFFEEF2FF), Color(0xFFF9FAFB)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _greeting(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey.shade600,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(height: 4),
+                          Text(
+                            'Alarms',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(color: const Color(0xFF0F172A)),
+                          ),
+                          const SizedBox(height: 6),
+                          Builder(
+                            builder: (context) {
+                              final next = _nextEnabledAlarmSummary;
+                              final text = next ??
+                                  (_alarms.isEmpty
+                                      ? 'No alarms set yet'
+                                      : '${_alarms.length} alarm${_alarms.length == 1 ? '' : 's'} scheduled');
+                              return Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF6366F1)
+                                          .withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          next != null
+                                              ? Icons.schedule_rounded
+                                              : Icons.notifications_none_rounded,
+                                          size: 16,
+                                          color: const Color(0xFF6366F1),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          text,
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                            color: Color(0xFF4B5563),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            if (_isLoading)
-              const SliverFillRemaining(
-                child: Center(
-                  child: SizedBox(
-                    width: 32,
-                    height: 32,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: Color(0xFF6366F1),
+              if (_isLoading)
+                const SliverFillRemaining(
+                  child: Center(
+                    child: SizedBox(
+                      width: 32,
+                      height: 32,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Color(0xFF6366F1),
+                      ),
+                    ),
+                  ),
+                )
+              else if (_alarms.isEmpty)
+                SliverFillRemaining(
+                  child: _EmptyState(onAddAlarm: () => _navigateToAddEdit()),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final alarm = _alarms[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _AlarmCard(
+                            alarm: alarm,
+                            onToggle: () => _toggleAlarm(alarm),
+                            onEdit: () => _navigateToAddEdit(alarm: alarm),
+                            onDelete: () => _deleteAlarm(alarm.id),
+                          ),
+                        );
+                      },
+                      childCount: _alarms.length,
                     ),
                   ),
                 ),
-              )
-            else if (_alarms.isEmpty)
-              SliverFillRemaining(
-                child: _EmptyState(onAddAlarm: () => _navigateToAddEdit()),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final alarm = _alarms[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _AlarmCard(
-                          alarm: alarm,
-                          onToggle: () => _toggleAlarm(alarm),
-                          onEdit: () => _navigateToAddEdit(alarm: alarm),
-                          onDelete: () => _deleteAlarm(alarm.id),
-                        ),
-                      );
-                    },
-                    childCount: _alarms.length,
-                  ),
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -242,115 +315,141 @@ class _AlarmCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = alarm.isEnabled;
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      elevation: 2,
-      shadowColor: Colors.black.withOpacity(0.08),
-      child: InkWell(
-        onTap: onEdit,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      alarm.timeString,
-                      style: TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -1,
-                        color: enabled ? const Color(0xFF0F172A) : Colors.grey.shade400,
-                        height: 1.1,
-                      ),
-                    ),
-                    if (alarm.label.isNotEmpty) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        alarm.label,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: enabled ? Colors.grey.shade700 : Colors.grey.shade400,
-                          fontWeight: FontWeight.w500,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: enabled
+            ? const LinearGradient(
+                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        borderRadius: BorderRadius.circular(22),
+      ),
+      child: Padding(
+        padding: enabled
+            ? const EdgeInsets.all(1.4)
+            : EdgeInsets.zero,
+        child: Material(
+          color: enabled ? Colors.white.withOpacity(0.96) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          elevation: 2,
+          shadowColor: Colors.black.withOpacity(0.12),
+          child: InkWell(
+            onTap: onEdit,
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          alarm.timeString,
+                          style: TextStyle(
+                            fontSize: 42,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -1,
+                            color: enabled
+                                ? const Color(0xFF0F172A)
+                                : Colors.grey.shade400,
+                            height: 1.1,
+                          ),
                         ),
+                        if (alarm.label.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            alarm.label,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: enabled
+                                  ? Colors.grey.shade700
+                                  : Colors.grey.shade400,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: enabled
+                                ? const Color(0xFF6366F1).withOpacity(0.10)
+                                : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            alarm.repeatText,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: enabled
+                                  ? const Color(0xFF4F46E5)
+                                  : Colors.grey.shade500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Column(
+                    children: [
+                      Switch(
+                        value: enabled,
+                        onChanged: (_) => onToggle(),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.delete_outline_rounded,
+                          color: Colors.grey.shade400,
+                          size: 22,
+                        ),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              title: const Text('Delete alarm?'),
+                              content: const Text(
+                                'This alarm will be removed. You can add it again anytime.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ),
+                                FilledButton(
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    onDelete();
+                                  },
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.red.shade400,
+                                  ),
+                                  child: const Text('Delete'),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                     ],
-                    const SizedBox(height: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: enabled
-                            ? const Color(0xFF6366F1).withOpacity(0.12)
-                            : Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        alarm.repeatText,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: enabled
-                              ? const Color(0xFF6366F1)
-                              : Colors.grey.shade500,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                children: [
-                  Switch(
-                    value: enabled,
-                    onChanged: (_) => onToggle(),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete_outline_rounded,
-                      color: Colors.grey.shade400,
-                      size: 22,
-                    ),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          title: const Text('Delete alarm?'),
-                          content: const Text(
-                            'This alarm will be removed. You can add it again anytime.',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx),
-                              child: Text(
-                                'Cancel',
-                                style: TextStyle(color: Colors.grey.shade700),
-                              ),
-                            ),
-                            FilledButton(
-                              onPressed: () {
-                                Navigator.pop(ctx);
-                                onDelete();
-                              },
-                              style: FilledButton.styleFrom(
-                                backgroundColor: Colors.red.shade400,
-                              ),
-                              child: const Text('Delete'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
