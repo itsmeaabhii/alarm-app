@@ -15,7 +15,7 @@ class AddEditAlarmScreen extends StatefulWidget {
 class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
   final AlarmStorage _storage = AlarmStorage();
   final TextEditingController _labelController = TextEditingController();
-  
+
   late TimeOfDay _selectedTime;
   late Set<int> _selectedDays;
   bool _isEnabled = true;
@@ -51,8 +51,11 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: Colors.deepPurple,
+            colorScheme: ColorScheme.light(
+              primary: const Color(0xFF6366F1),
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: const Color(0xFF0F172A),
             ),
           ),
           child: child!,
@@ -85,14 +88,12 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
     );
 
     if (widget.alarm != null) {
-      // Cancel old alarm before updating
       await AlarmService().cancelAlarm(alarm.id);
       await _storage.updateAlarm(alarm);
     } else {
       await _storage.addAlarm(alarm);
     }
 
-    // Schedule the new/updated alarm if enabled
     if (alarm.isEnabled) {
       await AlarmService().scheduleAlarm(alarm);
     }
@@ -105,76 +106,100 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFFF1F5F9),
       appBar: AppBar(
         title: Text(
-          widget.alarm != null ? 'Edit Alarm' : 'Add Alarm',
-          style: const TextStyle(fontWeight: FontWeight.bold),
+          widget.alarm != null ? 'Edit alarm' : 'New alarm',
+          style: const TextStyle(
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF0F172A),
+            fontSize: 20,
+          ),
         ),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.close_rounded, color: Colors.grey.shade700),
+          onPressed: () => Navigator.pop(context),
+        ),
         actions: [
-          TextButton(
-            onPressed: _saveAlarm,
-            child: const Text(
-              'SAVE',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: TextButton(
+              onPressed: _saveAlarm,
+              child: const Text(
+                'Save',
+                style: TextStyle(
+                  color: Color(0xFF6366F1),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Time Picker Card
-            Card(
+            // Time picker
+            Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
               elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+              shadowColor: Colors.black.withOpacity(0.06),
               child: InkWell(
                 onTap: _pickTime,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
                 child: Padding(
-                  padding: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.access_time,
-                        color: Colors.deepPurple,
-                        size: 32,
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(
+                          Icons.schedule_rounded,
+                          color: Color(0xFF6366F1),
+                          size: 28,
+                        ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 20),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Time',
                               style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey,
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             Text(
                               _selectedTime.format(context),
                               style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 32,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF0F172A),
+                                letterSpacing: -0.5,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const Icon(Icons.chevron_right),
+                      Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.grey.shade400,
+                        size: 28,
+                      ),
                     ],
                   ),
                 ),
@@ -182,113 +207,83 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Label Card
-            Card(
+            // Label
+            Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
               elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+              shadowColor: Colors.black.withOpacity(0.06),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: TextField(
                   controller: _labelController,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Label',
-                    hintText: 'Wake up, Meeting, etc.',
+                    hintText: 'Wake up, Meeting…',
                     border: InputBorder.none,
                     prefixIcon: Icon(
-                      Icons.label_outline,
-                      color: Colors.deepPurple,
+                      Icons.label_outline_rounded,
+                      color: Colors.grey.shade500,
+                      size: 22,
                     ),
+                    labelStyle: TextStyle(color: Colors.grey.shade600),
+                    hintStyle: TextStyle(color: Colors.grey.shade400),
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 16),
 
-            // Repeat Days Card
-            Card(
+            // Repeat
+            Material(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
               elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+              shadowColor: Colors.black.withOpacity(0.06),
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
                         Icon(
-                          Icons.repeat,
-                          color: Colors.deepPurple,
+                          Icons.repeat_rounded,
+                          color: Colors.grey.shade600,
+                          size: 22,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Text(
                           'Repeat',
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _DayButton(
-                          day: 'Mon',
-                          dayNumber: 1,
-                          isSelected: _selectedDays.contains(1),
-                          onTap: () => _toggleDay(1),
-                        ),
-                        _DayButton(
-                          day: 'Tue',
-                          dayNumber: 2,
-                          isSelected: _selectedDays.contains(2),
-                          onTap: () => _toggleDay(2),
-                        ),
-                        _DayButton(
-                          day: 'Wed',
-                          dayNumber: 3,
-                          isSelected: _selectedDays.contains(3),
-                          onTap: () => _toggleDay(3),
-                        ),
-                        _DayButton(
-                          day: 'Thu',
-                          dayNumber: 4,
-                          isSelected: _selectedDays.contains(4),
-                          onTap: () => _toggleDay(4),
-                        ),
-                        _DayButton(
-                          day: 'Fri',
-                          dayNumber: 5,
-                          isSelected: _selectedDays.contains(5),
-                          onTap: () => _toggleDay(5),
-                        ),
-                        _DayButton(
-                          day: 'Sat',
-                          dayNumber: 6,
-                          isSelected: _selectedDays.contains(6),
-                          onTap: () => _toggleDay(6),
-                        ),
-                        _DayButton(
-                          day: 'Sun',
-                          dayNumber: 7,
-                          isSelected: _selectedDays.contains(7),
-                          onTap: () => _toggleDay(7),
-                        ),
+                        _DayChip(day: 'M', dayNumber: 1, isSelected: _selectedDays.contains(1), onTap: () => _toggleDay(1)),
+                        _DayChip(day: 'T', dayNumber: 2, isSelected: _selectedDays.contains(2), onTap: () => _toggleDay(2)),
+                        _DayChip(day: 'W', dayNumber: 3, isSelected: _selectedDays.contains(3), onTap: () => _toggleDay(3)),
+                        _DayChip(day: 'T', dayNumber: 4, isSelected: _selectedDays.contains(4), onTap: () => _toggleDay(4)),
+                        _DayChip(day: 'F', dayNumber: 5, isSelected: _selectedDays.contains(5), onTap: () => _toggleDay(5)),
+                        _DayChip(day: 'S', dayNumber: 6, isSelected: _selectedDays.contains(6), onTap: () => _toggleDay(6)),
+                        _DayChip(day: 'S', dayNumber: 7, isSelected: _selectedDays.contains(7), onTap: () => _toggleDay(7)),
                       ],
                     ),
                     if (_selectedDays.isEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(top: 8),
+                        padding: const EdgeInsets.only(top: 12),
                         child: Text(
                           'One-time alarm',
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                            fontSize: 13,
+                            color: Colors.grey.shade500,
                           ),
                         ),
                       ),
@@ -298,33 +293,32 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
             ),
             const SizedBox(height: 24),
 
-            // Quick preset buttons
-            const Text(
-              'Quick Presets',
+            Text(
+              'Quick presets',
               style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Colors.grey.shade700,
               ),
             ),
             const SizedBox(height: 12),
             Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 10,
+              runSpacing: 10,
               children: [
-                _PresetButton(
+                _PresetChip(
                   label: 'Weekdays',
                   onTap: () => setState(() => _selectedDays = {1, 2, 3, 4, 5}),
                 ),
-                _PresetButton(
+                _PresetChip(
                   label: 'Weekends',
                   onTap: () => setState(() => _selectedDays = {6, 7}),
                 ),
-                _PresetButton(
+                _PresetChip(
                   label: 'Every day',
                   onTap: () => setState(() => _selectedDays = {1, 2, 3, 4, 5, 6, 7}),
                 ),
-                _PresetButton(
+                _PresetChip(
                   label: 'Clear',
                   onTap: () => setState(() => _selectedDays = {}),
                 ),
@@ -337,13 +331,13 @@ class _AddEditAlarmScreenState extends State<AddEditAlarmScreen> {
   }
 }
 
-class _DayButton extends StatelessWidget {
+class _DayChip extends StatelessWidget {
   final String day;
   final int dayNumber;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _DayButton({
+  const _DayChip({
     required this.day,
     required this.dayNumber,
     required this.isSelected,
@@ -354,19 +348,21 @@ class _DayButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: isSelected ? Colors.deepPurple : Colors.grey[200],
+          color: isSelected ? const Color(0xFF6366F1) : Colors.grey.shade100,
           shape: BoxShape.circle,
         ),
         child: Center(
           child: Text(
-            day[0],
+            day,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black54,
-              fontWeight: FontWeight.bold,
+              color: isSelected ? Colors.white : Colors.grey.shade600,
+              fontWeight: FontWeight.w700,
+              fontSize: 14,
             ),
           ),
         ),
@@ -375,27 +371,34 @@ class _DayButton extends StatelessWidget {
   }
 }
 
-class _PresetButton extends StatelessWidget {
+class _PresetChip extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _PresetButton({
-    required this.label,
-    required this.onTap,
-  });
+  const _PresetChip({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.deepPurple,
-        side: const BorderSide(color: Colors.deepPurple),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      elevation: 1,
+      shadowColor: Colors.black.withOpacity(0.05),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFF6366F1),
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
         ),
       ),
-      child: Text(label),
     );
   }
 }

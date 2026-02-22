@@ -26,11 +26,12 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() => _isLoading = true);
     final alarms = await _storage.loadAlarms();
     setState(() {
-      _alarms = alarms..sort((a, b) {
-        final aTime = a.hour * 60 + a.minute;
-        final bTime = b.hour * 60 + b.minute;
-        return aTime.compareTo(bTime);
-      });
+      _alarms = alarms
+        ..sort((a, b) {
+          final aTime = a.hour * 60 + a.minute;
+          final bTime = b.hour * 60 + b.minute;
+          return aTime.compareTo(bTime);
+        });
       _isLoading = false;
     });
   }
@@ -38,13 +39,13 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _toggleAlarm(Alarm alarm) async {
     final updatedAlarm = alarm.copyWith(isEnabled: !alarm.isEnabled);
     await _storage.updateAlarm(updatedAlarm);
-    
+
     if (updatedAlarm.isEnabled) {
       await AlarmService().scheduleAlarm(updatedAlarm);
     } else {
       await AlarmService().cancelAlarm(updatedAlarm.id);
     }
-    
+
     await _loadAlarms();
   }
 
@@ -69,66 +70,157 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
-      appBar: AppBar(
-        title: const Text(
-          'Alarms',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _alarms.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.alarm_off,
-                        size: 80,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No alarms yet',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Alarms',
+                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                color: const Color(0xFF0F172A),
+                              ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Tap + to create your first alarm',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[500],
+                        const SizedBox(height: 4),
+                        Text(
+                          _alarms.isEmpty
+                              ? 'No alarms set'
+                              : '${_alarms.length} alarm${_alarms.length == 1 ? '' : 's'}',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _alarms.length,
-                  itemBuilder: (context, index) {
-                    final alarm = _alarms[index];
-                    return _AlarmCard(
-                      alarm: alarm,
-                      onToggle: () => _toggleAlarm(alarm),
-                      onEdit: () => _navigateToAddEdit(alarm: alarm),
-                      onDelete: () => _deleteAlarm(alarm.id),
-                    );
-                  },
+                      ],
+                    ),
+                  ],
                 ),
-      floatingActionButton: FloatingActionButton(
+              ),
+            ),
+            if (_isLoading)
+              const SliverFillRemaining(
+                child: Center(
+                  child: SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: Color(0xFF6366F1),
+                    ),
+                  ),
+                ),
+              )
+            else if (_alarms.isEmpty)
+              SliverFillRemaining(
+                child: _EmptyState(onAddAlarm: () => _navigateToAddEdit()),
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final alarm = _alarms[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: _AlarmCard(
+                          alarm: alarm,
+                          onToggle: () => _toggleAlarm(alarm),
+                          onEdit: () => _navigateToAddEdit(alarm: alarm),
+                          onDelete: () => _deleteAlarm(alarm.id),
+                        ),
+                      );
+                    },
+                    childCount: _alarms.length,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _navigateToAddEdit(),
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add_rounded, size: 24),
+        label: const Text(
+          'Add alarm',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final VoidCallback onAddAlarm;
+
+  const _EmptyState({required this.onAddAlarm});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: const Color(0xFF6366F1).withOpacity(0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.schedule_rounded,
+                size: 64,
+                color: const Color(0xFF6366F1).withOpacity(0.8),
+              ),
+            ),
+            const SizedBox(height: 28),
+            Text(
+              'No alarms yet',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontSize: 22,
+                    color: const Color(0xFF0F172A),
+                  ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Tap the button below to create your first alarm and wake up on time.',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade600,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            FilledButton.icon(
+              onPressed: onAddAlarm,
+              icon: const Icon(Icons.add_rounded, size: 20),
+              label: const Text('Add alarm'),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFF6366F1),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -149,17 +241,17 @@ class _AlarmCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+    final enabled = alarm.isEnabled;
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shadowColor: Colors.black.withOpacity(0.08),
       child: InkWell(
         onTap: onEdit,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           child: Row(
             children: [
               Expanded(
@@ -169,28 +261,42 @@ class _AlarmCard extends StatelessWidget {
                     Text(
                       alarm.timeString,
                       style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: alarm.isEnabled ? Colors.black87 : Colors.grey,
+                        fontSize: 42,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -1,
+                        color: enabled ? const Color(0xFF0F172A) : Colors.grey.shade400,
+                        height: 1.1,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    if (alarm.label.isNotEmpty)
+                    if (alarm.label.isNotEmpty) ...[
+                      const SizedBox(height: 6),
                       Text(
                         alarm.label,
                         style: TextStyle(
                           fontSize: 16,
-                          color: alarm.isEnabled ? Colors.black54 : Colors.grey,
+                          color: enabled ? Colors.grey.shade700 : Colors.grey.shade400,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                    const SizedBox(height: 4),
-                    Text(
-                      alarm.repeatText,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: alarm.isEnabled
-                            ? Colors.deepPurple
-                            : Colors.grey,
+                    ],
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: enabled
+                            ? const Color(0xFF6366F1).withOpacity(0.12)
+                            : Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        alarm.repeatText,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: enabled
+                              ? const Color(0xFF6366F1)
+                              : Colors.grey.shade500,
+                        ),
                       ),
                     ),
                   ],
@@ -199,35 +305,43 @@ class _AlarmCard extends StatelessWidget {
               Column(
                 children: [
                   Switch(
-                    value: alarm.isEnabled,
+                    value: enabled,
                     onChanged: (_) => onToggle(),
-                    activeTrackColor: Colors.deepPurple,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    color: Colors.red[400],
+                    icon: Icon(
+                      Icons.delete_outline_rounded,
+                      color: Colors.grey.shade400,
+                      size: 22,
+                    ),
                     onPressed: () {
                       showDialog(
                         context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Delete Alarm'),
+                        builder: (ctx) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          title: const Text('Delete alarm?'),
                           content: const Text(
-                            'Are you sure you want to delete this alarm?',
+                            'This alarm will be removed. You can add it again anytime.',
                           ),
                           actions: [
                             TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Cancel'),
+                              onPressed: () => Navigator.pop(ctx),
+                              child: Text(
+                                'Cancel',
+                                style: TextStyle(color: Colors.grey.shade700),
+                              ),
                             ),
-                            TextButton(
+                            FilledButton(
                               onPressed: () {
-                                Navigator.pop(context);
+                                Navigator.pop(ctx);
                                 onDelete();
                               },
-                              child: const Text(
-                                'Delete',
-                                style: TextStyle(color: Colors.red),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: Colors.red.shade400,
                               ),
+                              child: const Text('Delete'),
                             ),
                           ],
                         ),
