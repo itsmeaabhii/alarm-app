@@ -1,5 +1,5 @@
 name: alarm_app
-description: A Flutter alarm application
+description: A beautiful Flutter alarm application with Material Design 3 and local notifications
 publish_to: 'none'
 version: 1.0.0+1
 

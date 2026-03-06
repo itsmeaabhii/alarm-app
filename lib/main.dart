@@ -3,15 +3,30 @@ import 'package:google_fonts/google_fonts.dart';
 import 'screens/home_screen.dart';
 import 'services/alarm_service.dart';
 
+/// Entry point of the Alarm application.
+/// 
+/// Initializes the Flutter framework bindings, sets up the alarm service,
+/// reschedules any existing alarms, and launches the app.
 void main() async {
+  // Ensure Flutter framework is initialized before running async operations
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize the alarm service (notifications, permissions, etc.)
   await AlarmService().initialize();
+  
+  // Reschedule all previously set alarms that may have been cleared
   await AlarmService().rescheduleAllAlarms();
 
   runApp(const AlarmApp());
 }
 
+/// Main application widget that configures the app theme and navigation.
+/// 
+/// This widget sets up:
+/// - Material Design 3 with a custom dark theme
+/// - Google Fonts (DM Sans) for typography
+/// - Custom color scheme with indigo primary color
+/// - Card and button styling
 class AlarmApp extends StatelessWidget {
   const AlarmApp({super.key});
 
